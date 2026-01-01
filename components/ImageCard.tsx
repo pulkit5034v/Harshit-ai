@@ -5,14 +5,15 @@ import { GeneratedImage } from '../types';
 interface ImageCardProps {
   image: GeneratedImage;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export const ImageCard: React.FC<ImageCardProps> = ({ image, onDelete }) => {
+export const ImageCard: React.FC<ImageCardProps> = ({ image, onDelete, onEdit }) => {
   const handleDownload = () => {
     if (image.loading || !image.url) return;
     const link = document.createElement('a');
     link.href = image.url;
-    link.download = `gemini_${image.id.slice(0, 8)}.png`;
+    link.download = `cinema_frame_${image.id.slice(0, 8)}.png`;
     link.click();
   };
 
@@ -28,86 +29,69 @@ export const ImageCard: React.FC<ImageCardProps> = ({ image, onDelete }) => {
   };
 
   return (
-    <div className={`group relative bg-slate-800 rounded-2xl overflow-hidden border transition-all ${image.loading ? 'border-indigo-500/30' : 'border-slate-700 hover:scale-[1.02] hover:shadow-2xl hover:border-indigo-500/50'}`}>
+    <div className={`group relative bg-slate-950 rounded-[2.5rem] overflow-hidden border transition-all duration-500 ${image.loading ? 'border-indigo-500/20 animate-pulse' : 'border-white/5 hover:border-indigo-500/40 hover:shadow-[0_0_40px_rgba(99,102,241,0.1)]'}`}>
       <div className={`w-full overflow-hidden relative ${getAspectClass(image.aspectRatio)}`}>
         {image.loading ? (
-          <div className="absolute inset-0 bg-slate-800 flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-            <p className="text-xs font-medium text-slate-400 animate-pulse uppercase tracking-widest">Generating...</p>
+          <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-12 h-12 border-2 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin mb-6"></div>
+            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Processing Frame</p>
           </div>
         ) : image.error ? (
-          <div className="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center p-4 text-center">
-            <svg className="w-8 h-8 text-red-500/50 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="text-xs text-red-400 font-medium">Failed to generate</p>
+          <div className="absolute inset-0 bg-red-950/10 flex flex-col items-center justify-center p-6 text-center">
+            <svg className="w-8 h-8 text-red-500/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-[10px] text-red-500 font-black uppercase tracking-widest">Transmission Failure</p>
           </div>
         ) : (
-          <img 
-            src={image.url} 
-            alt={image.prompt}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            loading="lazy"
-          />
+          <>
+            <img 
+              src={image.url} 
+              alt=""
+              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              loading="lazy"
+            />
+            {/* Cinematic Frame Indicators */}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 text-[8px] font-black uppercase tracking-widest text-white/80">REC</div>
+            </div>
+            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md rounded-full border border-white/10 px-3 py-1 text-[8px] font-black uppercase tracking-widest text-indigo-400">
+              {image.transition?.toUpperCase() || "FADE"}
+            </div>
+          </>
         )}
       </div>
       
-      {/* Overlay Actions - only show if not loading/error */}
+      {/* Overlay Actions */}
       {!image.loading && !image.error && (
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-          <div className="flex gap-2">
-            <button 
-              onClick={handleDownload}
-              className="flex-1 bg-white hover:bg-slate-100 text-slate-900 font-bold py-2 rounded-lg text-sm flex items-center justify-center gap-2"
-            >
-              <DownloadSmall />
-              Download
-            </button>
-            <button 
-              onClick={onDelete}
-              className="w-10 h-10 bg-red-500 hover:bg-red-400 text-white rounded-lg flex items-center justify-center transition-colors"
-            >
-              <TrashIcon />
-            </button>
-          </div>
+        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 p-6 backdrop-blur-[2px]">
+          <button onClick={onEdit} className="p-4 bg-white text-black rounded-full hover:bg-indigo-600 hover:text-white transition-all transform hover:-translate-y-1 active:scale-90">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" strokeWidth="2" /></svg>
+          </button>
+          <button onClick={handleDownload} className="p-4 bg-white text-black rounded-full hover:bg-indigo-600 hover:text-white transition-all transform hover:-translate-y-1 active:scale-90">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" strokeWidth="2" /></svg>
+          </button>
+          <button onClick={onDelete} className="p-4 bg-red-500/10 text-red-500 rounded-full hover:bg-red-500 hover:text-white transition-all transform hover:-translate-y-1 active:scale-90 border border-red-500/20">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeWidth="2" /></svg>
+          </button>
         </div>
       )}
 
-      {/* Delete button for loading/error states */}
-      {(image.loading || image.error) && (
-        <button 
-          onClick={onDelete}
-          className="absolute top-2 right-2 p-1.5 bg-slate-900/80 hover:bg-red-500 text-slate-400 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100"
-        >
-          <TrashIcon />
-        </button>
-      )}
-
-      <div className="p-4 border-t border-slate-700/50">
-        <div className="flex items-center gap-2 mb-2">
-          <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider ${image.loading ? 'bg-indigo-500/10 text-indigo-400/50' : 'bg-indigo-500/20 text-indigo-400'}`}>
+      <div className="p-6 md:p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <span className={`px-3 py-1 text-[9px] font-black rounded-full uppercase tracking-widest ${image.loading ? 'bg-white/5 text-white/20' : 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'}`}>
             {image.style}
           </span>
-          <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider ${image.loading ? 'bg-slate-700/50 text-slate-500' : 'bg-slate-700 text-slate-400'}`}>
+          <span className="px-3 py-1 text-[9px] font-black rounded-full uppercase tracking-widest bg-white/5 text-white/40 border border-white/10">
             {image.aspectRatio}
           </span>
         </div>
-        <p className={`text-sm line-clamp-2 italic ${image.loading ? 'text-slate-600' : 'text-slate-300'}`}>
-          "{image.prompt}"
+        <p className={`text-sm md:text-base font-black leading-tight italic line-clamp-2 mb-3 tracking-tight ${image.loading ? 'text-white/10' : 'text-white'}`}>
+          {image.scriptSegment ? `"${image.scriptSegment}"` : image.prompt}
         </p>
+        <div className="flex justify-between items-center opacity-40">
+           <span className="text-[9px] font-black uppercase tracking-widest">Frame Index #{image.id.slice(-4).toUpperCase()}</span>
+           <span className="text-[9px] font-black uppercase tracking-widest">5.0s</span>
+        </div>
       </div>
     </div>
   );
 };
-
-const TrashIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-  </svg>
-);
-
-const DownloadSmall = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-  </svg>
-);
